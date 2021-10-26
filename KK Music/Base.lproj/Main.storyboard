@@ -483,8 +483,8 @@
                                     <rect key="frame" x="0.0" y="0.0" width="240" height="240"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
-                                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="folder.badge.plus.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="dY9-8u-pbd">
-                                            <rect key="frame" x="59.999999999999993" y="41.333333333333336" width="121.33333333333333" height="117.33333333333334"/>
+                                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="dY9-8u-pbd">
+                                            <rect key="frame" x="60" y="40" width="120" height="120"/>
                                             <constraints>
                                                 <constraint firstAttribute="width" secondItem="dY9-8u-pbd" secondAttribute="height" multiplier="1:1" id="K5i-iH-bp6"/>
                                             </constraints>
@@ -540,7 +540,6 @@
         <image name="ImageLoading" width="1024" height="1024"/>
         <image name="backward.fill" catalog="system" width="128" height="79"/>
         <image name="checkmark" catalog="system" width="128" height="114"/>
-        <image name="folder.badge.plus.fill" catalog="system" width="128" height="91"/>
         <image name="forward.fill" catalog="system" width="128" height="79"/>
         <image name="pause.fill" catalog="system" width="116" height="128"/>
         <image name="play.fill" catalog="system" width="116" height="128"/>
