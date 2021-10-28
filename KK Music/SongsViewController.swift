@@ -46,12 +46,47 @@ class SongsViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        refreshView()
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if let mediaVC = segue.destination as? MediaViewController {
+            mediaVC.delegate = self
+        }
+    }
+    
+    func refreshView() {
         MediaManager.delegate = self
-        
-        self.songsTableView.reloadRows(at: songsTableView.indexPathsForVisibleRows ?? [IndexPath](), with: .none)
+        smartReloadVisibleRows()
         updateMediaControls()
         updateMediaPeak()
         updateSelectedCell()
+    }
+    
+    func smartReloadVisibleRows() {
+        guard let indexPathsForVisibleRows = songsTableView.indexPathsForVisibleRows else { return }
+        var indexPathsToReload = [IndexPath]()
+        for indexPath in indexPathsForVisibleRows {
+            if let cell = songsTableView.cellForRow(at: indexPath) as? SongTableViewCell {
+                if let song = cell.song {
+                    // Image view isHidden should never match isAddedToLibrary, need to reload cell
+                    if cell.addedImageView.isHidden == LibraryManager.isAddedToLibrary(id: song.id) {
+                        indexPathsToReload.append(indexPath)
+                    }
+                }
+            }
+        }
+        if indexPathsToReload.count > 0 {
+            songsTableView.reloadRows(at: indexPathsToReload, with: .none)
+        }
+    }
+}
+
+// MARK: - MediaViewDelegate Methods
+extension SongsViewController: MediaViewDelegate {
+    
+    func mediaViewWillDismiss() {
+        refreshView()
     }
 }
 
@@ -217,10 +252,14 @@ extension SongsViewController: UITableViewDataSource, UITableViewDelegate {
         return swipeActions
     }
     
+    func tableView(_ tableView: UITableView, didEndEditingRowAt indexPath: IndexPath?) {
+        updateSelectedCell()
+    }
+    
     func updateSelectedCell() {
         if let currentSongIndex = MediaManager.currentSongIndex {
             let indexPath = IndexPath(row: currentSongIndex, section: 0)
-            songsTableView.selectRow(at: indexPath, animated: false, scrollPosition: .none)
+            songsTableView.selectRow(at: indexPath, animated: true, scrollPosition: .none)
         } else {
             songsTableView.selectRow(at: nil, animated: false, scrollPosition: .none)
         }

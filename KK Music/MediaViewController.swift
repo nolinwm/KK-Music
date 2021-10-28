@@ -7,6 +7,10 @@
 
 import UIKit
 
+protocol MediaViewDelegate {
+    func mediaViewWillDismiss()
+}
+
 class MediaViewController: UIViewController {
 
     @IBOutlet weak var containerView: UIView!
@@ -28,10 +32,15 @@ class MediaViewController: UIViewController {
     @IBOutlet weak var forwardButton: UIButton!
     
     var isScrubbing = false
+    var delegate: MediaViewDelegate?
+    
+    var containerTranslation = CGPoint(x: 0, y: 0)
     
     override func viewDidLoad() {
         super.viewDidLoad()
         stylizeViewController()
+        
+        view.addGestureRecognizer(UIPanGestureRecognizer(target: self, action: #selector(handlePanGesture)))
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -110,6 +119,31 @@ class MediaViewController: UIViewController {
 // MARK: - Present and Dismiss Animation Methods
 extension MediaViewController {
     
+    @objc func handlePanGesture(sender: UIPanGestureRecognizer) {
+        switch sender.state {
+        case.changed:
+            containerTranslation = sender.translation(in: view)
+            UIView.animate(withDuration: 0.075, delay: 0) {
+                self.containerView.transform = CGAffineTransform(translationX: 0, y: max(0, self.containerTranslation.y))
+            }
+            containerView.layer.cornerRadius = min((containerTranslation.y / 3), 40)
+            break
+        case .ended:
+            if self.containerTranslation.y < (view.frame.height / 3.5) {
+                UIView.animate(withDuration: self.containerTranslation.y / view.frame.height, delay: 0) {
+                    self.containerView.transform = .identity
+                    self.containerView.layer.cornerRadius = 0
+                }
+            } else {
+                view.isUserInteractionEnabled = false
+                dismissAnimation()
+            }
+            break
+        default:
+            break
+        }
+    }
+    
     func prepareForPresentAnimation() {
         containerView.transform = CGAffineTransform(
             translationX: 0,
@@ -119,16 +153,17 @@ extension MediaViewController {
     }
     
     func presentAnimation() {
-        UIView.animate(withDuration: 0.35, delay: 0, options: .curveEaseOut) {
+        UIView.animate(withDuration: 0.25, delay: 0, options: .curveEaseOut) {
             self.containerView.transform = .identity
         }
-        UIView.animate(withDuration: 0.175, delay: 0.175, options: .curveEaseOut) {
+        UIView.animate(withDuration: 0.125, delay: 0.125, options: .curveEaseOut) {
             self.containerView.layer.cornerRadius = 0
         }
     }
     
     func dismissAnimation() {
-        UIView.animate(withDuration: 0.35, delay: 0, options: .curveEaseOut) {
+        delegate?.mediaViewWillDismiss()
+        UIView.animate(withDuration: 0.25, delay: 0, options: .curveEaseOut) {
             self.containerView.transform = CGAffineTransform(
                 translationX: 0,
                 y: self.containerView.frame.height
@@ -136,7 +171,7 @@ extension MediaViewController {
         } completion: { complete in
             self.dismiss(animated: false, completion: nil)
         }
-        UIView.animate(withDuration: 0.175, delay: 0, options: .curveEaseOut) {
+        UIView.animate(withDuration: 0.125, delay: 0, options: .curveEaseOut) {
             self.containerView.layer.cornerRadius = 40
         }
     }
