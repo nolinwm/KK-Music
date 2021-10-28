@@ -153,17 +153,17 @@ extension MediaViewController {
     }
     
     func presentAnimation() {
-        UIView.animate(withDuration: 0.25, delay: 0, options: .curveEaseOut) {
+        UIView.animate(withDuration: 0.35, delay: 0, options: .curveEaseInOut) {
             self.containerView.transform = .identity
         }
-        UIView.animate(withDuration: 0.125, delay: 0.125, options: .curveEaseOut) {
+        UIView.animate(withDuration: 0.175, delay: 0.175, options: .curveEaseOut) {
             self.containerView.layer.cornerRadius = 0
         }
     }
     
     func dismissAnimation() {
         delegate?.mediaViewWillDismiss()
-        UIView.animate(withDuration: 0.25, delay: 0, options: .curveEaseOut) {
+        UIView.animate(withDuration: 0.28, delay: 0, options: .curveEaseOut) {
             self.containerView.transform = CGAffineTransform(
                 translationX: 0,
                 y: self.containerView.frame.height
@@ -171,7 +171,7 @@ extension MediaViewController {
         } completion: { complete in
             self.dismiss(animated: false, completion: nil)
         }
-        UIView.animate(withDuration: 0.125, delay: 0, options: .curveEaseOut) {
+        UIView.animate(withDuration: 0.145, delay: 0, options: .curveEaseOut) {
             self.containerView.layer.cornerRadius = 40
         }
     }
