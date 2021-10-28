@@ -209,7 +209,7 @@
                             <constraint firstItem="2VN-du-Jga" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" id="yQ5-ks-Qd5"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" title="Songs" id="LfZ-9p-rUb"/>
+                    <navigationItem key="navigationItem" title="Songs" largeTitleDisplayMode="always" id="LfZ-9p-rUb"/>
                     <connections>
                         <outlet property="backgroundImageView" destination="1ic-w9-Le7" id="zzP-XR-tcJ"/>
                         <outlet property="forwardButton" destination="2gq-PR-5Wk" id="6GQ-yb-wm4"/>
