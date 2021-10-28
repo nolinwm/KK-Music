@@ -4,7 +4,6 @@
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
         <capability name="Image references" minToolsVersion="12.0"/>
-        <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -193,16 +192,10 @@
                                     <constraint firstItem="FsO-Ir-Wet" firstAttribute="top" secondItem="zaH-Ya-dK2" secondAttribute="bottom" constant="10" id="tUP-72-0HQ"/>
                                 </constraints>
                             </view>
-                            <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="medium" translatesAutoresizingMaskIntoConstraints="NO" id="YvX-iR-ofW">
-                                <rect key="frame" x="185" y="412" width="20" height="20"/>
-                                <color key="tintColor" name="AccentColor"/>
-                            </activityIndicatorView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
-                            <constraint firstItem="YvX-iR-ofW" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="88o-GX-Onw"/>
-                            <constraint firstItem="YvX-iR-ofW" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="E3o-Ha-aYo"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="QVl-SY-qKU" secondAttribute="bottom" id="ELf-ME-cgi"/>
                             <constraint firstItem="J8S-ek-rtI" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="VNE-4D-qgJ"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="QVl-SY-qKU" secondAttribute="trailing" id="YWC-Jb-qlO"/>
@@ -218,7 +211,6 @@
                     </view>
                     <navigationItem key="navigationItem" title="Songs" id="LfZ-9p-rUb"/>
                     <connections>
-                        <outlet property="activitySpinner" destination="YvX-iR-ofW" id="evT-jj-xoP"/>
                         <outlet property="backgroundImageView" destination="1ic-w9-Le7" id="zzP-XR-tcJ"/>
                         <outlet property="forwardButton" destination="2gq-PR-5Wk" id="6GQ-yb-wm4"/>
                         <outlet property="mediaPeak" destination="QVl-SY-qKU" id="eUt-Ts-Cma"/>
@@ -485,9 +477,6 @@
         <image name="pause.fill" catalog="system" width="116" height="128"/>
         <image name="play.fill" catalog="system" width="116" height="128"/>
         <image name="plus" catalog="system" width="128" height="113"/>
-        <namedColor name="AccentColor">
-            <color red="0.34509803921568627" green="0.74901960784313726" blue="0.97647058823529409" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-        </namedColor>
         <systemColor name="labelColor">
             <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
