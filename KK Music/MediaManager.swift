@@ -2,89 +2,129 @@
 //  MediaManager.swift
 //  KK Music
 //
-//  Created by Nolin McFarland on 10/24/21.
+//  Created by Nolin McFarland on 10/27/21.
 //
 
 import Foundation
 import AVFoundation
 
-protocol MediaManagerProtocol {
-    func mediaCurrentTimeChanged(_ currentTime: Float64, _ duration: Float64)
+protocol MediaManagerDelegate {
+    func mediaStatusChanged()
+    func mediaTimeChanged()
 }
 
 struct MediaManager {
     
+    private static var mediaPlayer: AVPlayer?
+    private static var mediaUrl: String?
+    
     static var songs = [Song]()
-    static var librarySongs: [Song] {
-        var librarySongs = [Song]()
-        for song in songs {
-            if LibraryManager.isAddedToLibrary(id: song.id) {
-                librarySongs.append(song)
-            }
-        }
-        return librarySongs
+    
+    static var delegate: MediaManagerDelegate?
+    
+    static var currentSongIndex: Int?
+    static var currentSong: Song? {
+        guard let currentSongIndex = currentSongIndex else { return nil }
+        return songs[currentSongIndex]
     }
-    static var currentIndex: Int?
     
-    static var mediaPlayer: AVPlayer?
-    static var mediaUrl: String?
-    static var isPlaying = false
+    static var isPlaying: Bool {
+        return (mediaPlayer?.rate != 0 && mediaPlayer?.error == nil)
+    }
     
-    static var delegate: MediaManagerProtocol?
+    static var currentSongTime: Double {
+        return mediaPlayer?.currentItem?.currentTime().seconds ?? 0
+    }
     
-    static func play() {
-        guard let currentIndex = currentIndex else { return }
-        let song = songs[currentIndex]
+    static var currentSongDuration: Double {
+        return mediaPlayer?.currentItem?.duration.seconds ?? 0
+    }
+    
+    static func play(_ newIndex: Int? = nil) {
+        if let newIndex = newIndex {
+             currentSongIndex = newIndex
+        }
+        guard let currentSongIndex = currentSongIndex, currentSongIndex < songs.count else { return }
+        
+        let song = songs[currentSongIndex]
         
         guard let urlString = song.music_uri else { return }
         
-        if mediaUrl != nil {
+        // If mediaURL is not nil, and matches current song url, resume.
+        if let mediaUrl = mediaUrl {
             if mediaUrl == urlString {
-                mediaPlayer!.play()
-                isPlaying = true
+                mediaPlayer?.play()
+                delegate?.mediaStatusChanged()
                 return
             }
         }
         
         if let url = URL(string: urlString) {
-            
             let playerItem = AVPlayerItem(url: url)
-            print(playerItem.currentTime())
             mediaPlayer = AVPlayer(playerItem: playerItem)
-            mediaPlayer!.volume = 1
-            mediaPlayer!.play()
-
+            
+            mediaPlayer?.volume = 1
+            mediaPlayer?.play()
+            
             mediaPlayer!.addPeriodicTimeObserver(forInterval: CMTime.init(seconds: 1/1000, preferredTimescale: CMTimeScale(NSEC_PER_SEC)), queue: DispatchQueue.main) { [self] (time) in
-                let currentTime = CMTimeGetSeconds(mediaPlayer!.currentItem!.currentTime())
-                let duration = CMTimeGetSeconds(mediaPlayer!.currentItem!.duration)
-                delegate?.mediaCurrentTimeChanged(currentTime, duration)
+                delegate?.mediaTimeChanged()
+                print(currentSongTime, currentSongDuration)
+                checkIfMediaEnded()
             }
             
             mediaUrl = urlString
-            isPlaying = true
         }
     }
     
     static func pause() {
         mediaPlayer?.pause()
-        isPlaying = false
+        delegate?.mediaStatusChanged()
     }
     
     static func forward() {
-        guard currentIndex != nil else { return }
-        currentIndex! += 1
-        if currentIndex! >= songs.count {
-            currentIndex = 0
+        guard currentSongIndex != nil else { return }
+        
+        currentSongIndex! += 1
+        if currentSongIndex! >= songs.count {
+            currentSongIndex! = 0
         }
+        
         play()
+        delegate?.mediaStatusChanged()
     }
     
     static func backward() {
-        guard currentIndex != nil else { return }
-        currentIndex! -= 1
-        if currentIndex! < 0 {
-            currentIndex = songs.count - 1
+        guard currentSongIndex != nil else { return }
+        
+        // If current time is >= 5 restart song, otherwise go to previous song
+        if currentSongTime >= 5 {
+            mediaUrl = nil
+        } else {
+            currentSongIndex! -= 1
+            if currentSongIndex! < 0 {
+                currentSongIndex = songs.count - 1
+            }
         }
+        
         play()
+        delegate?.mediaStatusChanged()
+    }
+    
+    static func scrub(_ progress: Float) {
+        let newTime = Double(progress) * currentSongDuration
+        let newCMTime = CMTimeMake(value: Int64(newTime), timescale: 1)
+        mediaPlayer?.seek(to: newCMTime)
+        checkIfMediaEnded()
+    }
+    
+    static func mediaDidEnd() {
+        forward()
+    }
+    
+    static func checkIfMediaEnded() {
+        let mediaProgress = Float((currentSongTime / currentSongDuration) * 1000).rounded() / 1000
+        if mediaProgress == 1 {
+            mediaDidEnd()
+        }
     }
 }

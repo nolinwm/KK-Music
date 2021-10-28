@@ -10,29 +10,41 @@ import UIKit
 class MediaViewController: UIViewController {
 
     @IBOutlet weak var containerView: UIView!
-    @IBOutlet weak var dragBar: UIView!
+    @IBOutlet weak var backgroundImageView: UIImageView!
+    @IBOutlet weak var swipeToCloseBar: UIView!
+    
     @IBOutlet weak var songImageShadowView: UIView!
     @IBOutlet weak var songImageView: UIImageView!
     @IBOutlet weak var songNameLabel: UILabel!
+    
     @IBOutlet weak var addedButton: UIButton!
     @IBOutlet weak var scrubBar: UISlider!
     @IBOutlet weak var currentTimeLabel: UILabel!
     @IBOutlet weak var durationLabel: UILabel!
+    
     @IBOutlet weak var backwardButton: UIButton!
     @IBOutlet weak var playButton: UIButton!
     @IBOutlet weak var pauseButton: UIButton!
     @IBOutlet weak var forwardButton: UIButton!
     
-    @IBOutlet weak var backgroundImageView: UIImageView!
-    
-    var notification: (String, String) = ("","")
+    var isScrubbing = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        stylizeViewController()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        MediaManager.delegate = self
+        updateMediaView()
+        beginAnimatingBackground()
+    }
+    
+    func stylizeViewController() {
         containerView.layer.cornerRadius = 30
         
-        dragBar.layer.cornerRadius = 3
+        swipeToCloseBar.layer.cornerRadius = 3
         
         songImageView.layer.cornerRadius = 12
         songImageShadowView.layer.cornerRadius = 12
@@ -42,16 +54,12 @@ class MediaViewController: UIViewController {
         songImageShadowView.layer.shadowOffset = CGSize(width: 0, height: 10)
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        updateDisplay()
-        MediaManager.delegate = self
-    }
-    
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if let vc = segue.destination as? NotificationViewController {
-            vc.imageName = notification.0
-            vc.notification = notification.1
+    func beginAnimatingBackground() {
+        UIView.animate(withDuration: 10, delay: 0, options: [.repeat, .autoreverse]) {
+            self.backgroundImageView.transform = CGAffineTransform(
+                scaleX: 2.5,
+                y: 1.5
+            )
         }
     }
     
@@ -59,35 +67,132 @@ class MediaViewController: UIViewController {
         dismiss(animated: true, completion: nil)
     }
     
-    func updateDisplay() {
-        guard let currentIndex = MediaManager.currentIndex else { return }
-        let song = MediaManager.songs[currentIndex]
+    @IBAction func addTapped(_ sender: Any) {
+        guard let currentSong = MediaManager.currentSong else { return }
         
-        songNameLabel.text = song.getName()
         
-        let isAdded = LibraryManager.isAddedToLibrary(id: song.id)
-        let image = isAdded ? UIImage(systemName: "checkmark") : UIImage(systemName: "plus")
-        addedButton.setImage(image, for: .normal)
+        let isAdded = LibraryManager.isAddedToLibrary(id: currentSong.id)
+        let hapticFeedback = UIImpactFeedbackGenerator(style: .light)
         
-        loadImage()
+        if isAdded {
+            LibraryManager.removeFromLibrary(id: currentSong.id)
+            hapticFeedback.impactOccurred()
+        } else {
+            LibraryManager.addToLibrary(id: currentSong.id)
+            hapticFeedback.impactOccurred()
+        }
+        
+        updateMediaControls()
+    }
+    
+    @IBAction func didStartScrubbing(_ sender: Any) {
+        isScrubbing = true
+    }
+    
+    @IBAction func scrubTouchUpInside(_ sender: Any) {
+        didEndScrubbing()
+    }
+    
+    @IBAction func scrubTouchUpOutside(_ sender: Any) {
+        didEndScrubbing()
+    }
+    
+    func didEndScrubbing() {
+        isScrubbing = false
+        let progress = scrubBar.value
+        MediaManager.scrub(progress)
+    }
+    
+}
+
+// MARK: = MediaManagerDelegate Methods
+extension MediaViewController: MediaManagerDelegate {
+    
+    func mediaStatusChanged() {
+        updateMediaView()
+    }
+    
+    func mediaTimeChanged() {
+        guard MediaManager.currentSongDuration > 0 else {
+            DispatchQueue.main.async {
+                self.scrubBar.value = 0
+                self.currentTimeLabel.text = "0:00"
+                self.durationLabel.text = "-0:00"
+            }
+            return
+        }
+        
+        let progress = Float(MediaManager.currentSongTime / MediaManager.currentSongDuration)
+        
+        let currentSongTime = isScrubbing ? (MediaManager.currentSongDuration * Double(scrubBar.value)) : MediaManager.currentSongTime
+        let currentSongTimeString = convertSecondsToTimeString(seconds: currentSongTime)
+        let currentSongRemainingDurationString = convertSecondsToTimeString(seconds: MediaManager.currentSongDuration - currentSongTime)
+
+        DispatchQueue.main.async {
+            if !self.isScrubbing {
+                self.scrubBar.value = progress
+            }
+            
+            self.currentTimeLabel.text = currentSongTimeString
+            self.durationLabel.text = "-\(currentSongRemainingDurationString)"
+        }
+    }
+    
+    func convertSecondsToTimeString(seconds: Double) -> String {
+        var remainingSeconds = Int(seconds)
+        var minutes = 0
+        
+        while remainingSeconds >= 60 {
+            remainingSeconds -= 60
+            minutes += 1
+        }
+        
+        var timeString = "\(minutes):"
+        if remainingSeconds < 10 {
+            timeString = "\(timeString)0"
+        }
+        timeString = "\(timeString)\(remainingSeconds)"
+        
+        return timeString
+    }
+}
+
+// MARK: - Media View Methods
+extension MediaViewController {
+    
+    func updateMediaView() {
+        guard let currentSong = MediaManager.currentSong else { return }
+        
+        songNameLabel.text = currentSong.getName()
+        loadMediaImage()
+        
         updateMediaControls()
     }
     
     func updateMediaControls() {
+        guard let currentSong = MediaManager.currentSong else { return }
+        
         playButton.isHidden = MediaManager.isPlaying
         pauseButton.isHidden = !MediaManager.isPlaying
+        
         if MediaManager.isPlaying {
             pullImageView()
         } else {
             pushImageView()
         }
+        
+        let isAdded = LibraryManager.isAddedToLibrary(id: currentSong.id)
+        let image = isAdded ? UIImage(systemName: "checkmark.circle.fill") : UIImage(systemName: "plus")
+        DispatchQueue.main.async {
+            self.addedButton.setImage(image, for: .normal)
+        }
     }
     
-    func loadImage() {
-        guard let currentIndex = MediaManager.currentIndex else { return }
-        let song = MediaManager.songs[currentIndex]
-        if song.image_uri != nil {
-            let urlString = song.image_uri!
+    func loadMediaImage() {
+        guard let currentSong = MediaManager.currentSong else { return }
+        
+        if currentSong.image_uri != nil {
+            let urlString = currentSong.image_uri!
             
             if let data = CacheManager.fetchImage(urlString) {
                 DispatchQueue.main.async {
@@ -104,7 +209,7 @@ class MediaViewController: UIViewController {
                 let session = URLSession.shared
                 let dataTask = session.dataTask(with: url) { (data, response, error) in
                     if error == nil && data != nil {
-                        if song.image_uri! == urlString {
+                        if currentSong.image_uri! == urlString {
                             CacheManager.saveImage(urlString, data!)
                             DispatchQueue.main.async {
                                 self.songImageView.image = UIImage(data: data!)
@@ -120,80 +225,21 @@ class MediaViewController: UIViewController {
     }
     
     func pushImageView() {
-        UIView.animate(withDuration: 0.35, delay: 0, options: .curveEaseOut) {
-            self.songImageShadowView.transform = CGAffineTransform(scaleX: 0.8625, y: 0.8625)
+        DispatchQueue.main.async {
+            UIView.animate(withDuration: 0.275, delay: 0, options: .curveEaseOut) {
+                self.songImageShadowView.transform = CGAffineTransform(scaleX: 0.825, y: 0.825)
+                self.songImageView.layer.shadowOpacity = (0.25 * 0.825)
+            }
         }
     }
     
     func pullImageView() {
-        UIView.animate(withDuration: 0.55, delay: 0, usingSpringWithDamping: 0.725, initialSpringVelocity: 2.25, options: .curveEaseOut) {
-            self.songImageShadowView.transform = .identity
-        }
-    }
-    
-    @IBAction func addTapped(_ sender: Any) {
-        guard let currentIndex = MediaManager.currentIndex else { return }
-        let song = MediaManager.songs[currentIndex]
-        
-        let isAdded = LibraryManager.isAddedToLibrary(id: song.id)
-        
-        if isAdded {
-            addedButton.setImage(UIImage(systemName: "plus"), for: .normal)
-            LibraryManager.removeFromLibrary(id: song.id)
-            notification = ("folder.badge.minus.fill","Removed From Library")
-            performSegue(withIdentifier: "presentNotification", sender: self)
-        } else {
-            addedButton.setImage(UIImage(systemName: "checkmark"), for: .normal)
-            LibraryManager.addToLibrary(id: song.id)
-            notification = ("folder.badge.plus.fill","Added To Library")
-            performSegue(withIdentifier: "presentNotification", sender: self)
-        }
-    }
-}
-
-// MARK: = MediaManagerProtocol Methods
-extension MediaViewController: MediaManagerProtocol {
-    
-    func mediaCurrentTimeChanged(_ currentTime: Float64, _ duration: Float64) {
-        let progress = Float((currentTime / duration) * 1000).rounded() / 1000
-        
-        if progress == 1 {
-            forwardAction()
-        }
-        
         DispatchQueue.main.async {
-            self.scrubBar.value = progress
+            UIView.animate(withDuration: 0.45, delay: 0, usingSpringWithDamping: 0.725, initialSpringVelocity: 2.75, options: .curveEaseOut) {
+                self.songImageShadowView.transform = .identity
+                self.songImageView.layer.shadowOpacity = 0.25
+            }
         }
-        
-        let convertedCurrentTime = convertSecondsToMinutes(Float(currentTime))
-        var currentTimeString = "\(convertedCurrentTime.0):"
-        if convertedCurrentTime.1 < 10 {
-            currentTimeString = "\(currentTimeString)0"
-        }
-        currentTimeString = "\(currentTimeString)\(convertedCurrentTime.1)"
-        currentTimeLabel.text = currentTimeString
-        
-        let convertedDuration = convertSecondsToMinutes(Float(duration))
-        var durationString = "\(convertedDuration.0):"
-        if convertedDuration.1 < 10 {
-            durationString = "\(durationString)0"
-        }
-        durationString = "\(durationString)\(convertedDuration.1)"
-        durationLabel.text = durationString
-    }
-    
-    func convertSecondsToMinutes(_ seconds: Float) -> (Int, Int) {
-        var minutes = 0
-        var remainingSeconds = seconds
-        while remainingSeconds >= 60 {
-            remainingSeconds -= 60
-            minutes += 1
-        }
-        
-        if remainingSeconds.isNaN || remainingSeconds < 0 {
-            remainingSeconds = 0
-        }
-        return (minutes, Int(floor(remainingSeconds)))
     }
 }
 
@@ -205,36 +251,22 @@ extension MediaViewController {
             pullImageView()
         }
         MediaManager.backward()
-        updateDisplay()
-        playButton.isHidden = true
-        pauseButton.isHidden = false
     }
     
     @IBAction func playTapped(_ sender: Any) {
         MediaManager.play()
-        playButton.isHidden = true
-        pauseButton.isHidden = false
         pullImageView()
     }
     
     @IBAction func pauseTapped(_ sender: Any) {
         MediaManager.pause()
-        playButton.isHidden = false
-        pauseButton.isHidden = true
         pushImageView()
     }
     
     @IBAction func forwardTapped(_ sender: Any) {
-        forwardAction()
-    }
-    
-    func forwardAction() {
         if !MediaManager.isPlaying {
             pullImageView()
         }
         MediaManager.forward()
-        updateDisplay()
-        playButton.isHidden = true
-        pauseButton.isHidden = false
     }
 }
