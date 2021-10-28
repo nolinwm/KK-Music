@@ -10,7 +10,7 @@ import UIKit
 class SongsViewController: UIViewController {
     
     @IBOutlet weak var songsTableView: UITableView!
-    @IBOutlet weak var loadingLabel: UILabel!
+    @IBOutlet weak var activitySpinner: UIActivityIndicatorView!
     
     @IBOutlet weak var mediaPeak: UIView!
     @IBOutlet weak var mediaPeakBackground: UIView!
@@ -65,7 +65,11 @@ extension SongsViewController: SongModelProtocol {
     }
     
     func reloadSongs() {
-        loadingLabel.isHidden = (MediaManager.songs.count > 0)
+        if MediaManager.songs.count > 0 {
+            activitySpinner.stopAnimating()
+        } else {
+            activitySpinner.startAnimating()
+        }
         songsTableView.isHidden = (MediaManager.songs.count == 0)
         if MediaManager.songs.count > 0 {
             songsTableView.reloadData()

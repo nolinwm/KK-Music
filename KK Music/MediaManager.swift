@@ -73,9 +73,9 @@ struct MediaManager {
         
         guard let urlString = song.music_uri else { return }
         
-        // If mediaURL is not nil, and matches current song url, resume.
+        // If mediaURL is not nil, matches current song url, and no newIndex is passed, resume.
         if let mediaUrl = mediaUrl {
-            if mediaUrl == urlString {
+            if mediaUrl == urlString && newIndex == nil {
                 mediaPlayer?.play()
                 delegate?.mediaStatusChanged()
                 return
