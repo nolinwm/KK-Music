@@ -18,7 +18,7 @@
 		5C310F7927263CE5009C3773 /* Song.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C310F7827263CE5009C3773 /* Song.swift */; };
 		5C310F7B27263DC2009C3773 /* CacheManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C310F7A27263DC2009C3773 /* CacheManager.swift */; };
 		5C310F7F27263E44009C3773 /* MediaViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C310F7E27263E44009C3773 /* MediaViewController.swift */; };
-		5C403B84272AD71D00DF59E1 /* UIButtonExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C403B83272AD71D00DF59E1 /* UIButtonExtension.swift */; };
+		5C403B84272AD71D00DF59E1 /* AnimatedButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C403B83272AD71D00DF59E1 /* AnimatedButton.swift */; };
 		5C4A13762726DC790072259C /* SongTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C4A13752726DC790072259C /* SongTableViewCell.swift */; };
 		5C6B30CA27272AFE00CD4620 /* UIImageExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C6B30C927272AFE00CD4620 /* UIImageExtension.swift */; };
 		5CC1AC43272736CC0021DB00 /* LibraryManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC1AC42272736CC0021DB00 /* LibraryManager.swift */; };
@@ -39,7 +39,7 @@
 		5C310F7827263CE5009C3773 /* Song.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Song.swift; sourceTree = "<group>"; };
 		5C310F7A27263DC2009C3773 /* CacheManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacheManager.swift; sourceTree = "<group>"; };
 		5C310F7E27263E44009C3773 /* MediaViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaViewController.swift; sourceTree = "<group>"; };
-		5C403B83272AD71D00DF59E1 /* UIButtonExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIButtonExtension.swift; sourceTree = "<group>"; };
+		5C403B83272AD71D00DF59E1 /* AnimatedButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimatedButton.swift; sourceTree = "<group>"; };
 		5C4A13752726DC790072259C /* SongTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongTableViewCell.swift; sourceTree = "<group>"; };
 		5C6B30C927272AFE00CD4620 /* UIImageExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIImageExtension.swift; sourceTree = "<group>"; };
 		5CC1AC42272736CC0021DB00 /* LibraryManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryManager.swift; sourceTree = "<group>"; };
@@ -92,7 +92,7 @@
 				5CC1AC42272736CC0021DB00 /* LibraryManager.swift */,
 				5CC1AC44272740170021DB00 /* NotificationViewController.swift */,
 				5C29468727297E1300E7EA84 /* MediaManager.swift */,
-				5C403B83272AD71D00DF59E1 /* UIButtonExtension.swift */,
+				5C403B83272AD71D00DF59E1 /* AnimatedButton.swift */,
 			);
 			path = "KK Music";
 			sourceTree = "<group>";
@@ -176,7 +176,7 @@
 				5C6B30CA27272AFE00CD4620 /* UIImageExtension.swift in Sources */,
 				5C310F7F27263E44009C3773 /* MediaViewController.swift in Sources */,
 				5C310F6527248C23009C3773 /* SceneDelegate.swift in Sources */,
-				5C403B84272AD71D00DF59E1 /* UIButtonExtension.swift in Sources */,
+				5C403B84272AD71D00DF59E1 /* AnimatedButton.swift in Sources */,
 				5C310F7B27263DC2009C3773 /* CacheManager.swift in Sources */,
 				5C4A13762726DC790072259C /* SongTableViewCell.swift in Sources */,
 				5C310F7927263CE5009C3773 /* Song.swift in Sources */,

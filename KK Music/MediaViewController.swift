@@ -42,6 +42,8 @@ class MediaViewController: UIViewController {
     }
     
     func stylizeViewController() {
+        scrubBar.setThumbImage(UIImage(systemName: "circle.fill"), for: .normal)
+        
         containerView.layer.cornerRadius = 30
         
         swipeToCloseBar.layer.cornerRadius = 3
@@ -57,9 +59,10 @@ class MediaViewController: UIViewController {
     func beginAnimatingBackground() {
         UIView.animate(withDuration: 10, delay: 0, options: [.repeat, .autoreverse]) {
             self.backgroundImageView.transform = CGAffineTransform(
-                scaleX: 2.5,
-                y: 1.5
+                scaleX: 3.75,
+                y: 2
             )
+            self.backgroundImageView.alpha = 0.85
         }
     }
     
@@ -69,7 +72,6 @@ class MediaViewController: UIViewController {
     
     @IBAction func addTapped(_ sender: Any) {
         guard let currentSong = MediaManager.currentSong else { return }
-        
         
         let isAdded = LibraryManager.isAddedToLibrary(id: currentSong.id)
         let hapticFeedback = UIImpactFeedbackGenerator(style: .light)
@@ -122,24 +124,21 @@ extension MediaViewController: MediaManagerDelegate {
             return
         }
         
-        let progress = Float(MediaManager.currentSongTime / MediaManager.currentSongDuration)
-        
-        let currentSongTime = isScrubbing ? (MediaManager.currentSongDuration * Double(scrubBar.value)) : MediaManager.currentSongTime
+        let currentSongTime = isScrubbing ? Int(Float(MediaManager.currentSongDuration) * scrubBar.value) : MediaManager.currentSongTime
         let currentSongTimeString = convertSecondsToTimeString(seconds: currentSongTime)
         let currentSongRemainingDurationString = convertSecondsToTimeString(seconds: MediaManager.currentSongDuration - currentSongTime)
 
         DispatchQueue.main.async {
             if !self.isScrubbing {
-                self.scrubBar.value = progress
+                self.scrubBar.setValue(MediaManager.currentSongProgress, animated: false)
             }
-            
             self.currentTimeLabel.text = currentSongTimeString
             self.durationLabel.text = "-\(currentSongRemainingDurationString)"
         }
     }
     
-    func convertSecondsToTimeString(seconds: Double) -> String {
-        var remainingSeconds = Int(seconds)
+    func convertSecondsToTimeString(seconds: Int) -> String {
+        var remainingSeconds = seconds
         var minutes = 0
         
         while remainingSeconds >= 60 {

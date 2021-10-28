@@ -146,16 +146,9 @@ extension SongsViewController: MediaManagerDelegate {
     }
     
     func mediaTimeChanged() {
-        guard MediaManager.currentSongDuration > 0 else {
-            scrubBar.isHidden = true
-            return
-        }
-        
-        let progress = Float(MediaManager.currentSongTime / MediaManager.currentSongDuration)
-        
         DispatchQueue.main.async {
-            self.scrubBar.isHidden = false
-            self.scrubBar.progress = progress
+            self.scrubBar.isHidden = (MediaManager.currentSongProgress == 0)
+            self.scrubBar.setProgress(MediaManager.currentSongProgress, animated: false)
         }
     }
 }

@@ -32,12 +32,35 @@ struct MediaManager {
         return (mediaPlayer?.rate != 0 && mediaPlayer?.error == nil)
     }
     
-    static var currentSongTime: Double {
-        return mediaPlayer?.currentItem?.currentTime().seconds ?? 0
+    static var currentSongTime: Int {
+        if let seconds = mediaPlayer?.currentItem?.currentTime().seconds {
+            return Int(seconds)
+        } else {
+            return 0
+        }
     }
     
-    static var currentSongDuration: Double {
-        return mediaPlayer?.currentItem?.duration.seconds ?? 0
+    static var currentSongDuration: Int {
+        if let seconds = mediaPlayer?.currentItem?.duration.seconds {
+            if seconds.isNaN {
+                return 0
+            }
+            return Int(seconds)
+        } else {
+            return 0
+        }
+    }
+    
+    static var currentSongProgress: Float {
+        guard currentSongDuration > 0 else { return 0 }
+        guard let mediaPlayer = mediaPlayer, let currentItem = mediaPlayer.currentItem else { return 0 }
+        
+        let timeSeconds = Double(currentItem.currentTime().seconds)
+        let durationSeconds = Double(currentItem.duration.seconds)
+    
+        return Float(
+            ((timeSeconds / durationSeconds) * 1000).rounded() / 1000
+        )
     }
     
     static func play(_ newIndex: Int? = nil) {
@@ -68,7 +91,6 @@ struct MediaManager {
             
             mediaPlayer!.addPeriodicTimeObserver(forInterval: CMTime.init(seconds: 1/1000, preferredTimescale: CMTimeScale(NSEC_PER_SEC)), queue: DispatchQueue.main) { [self] (time) in
                 delegate?.mediaTimeChanged()
-                print(currentSongTime, currentSongDuration)
                 checkIfMediaEnded()
             }
             
@@ -111,9 +133,10 @@ struct MediaManager {
     }
     
     static func scrub(_ progress: Float) {
-        let newTime = Double(progress) * currentSongDuration
+        let newTime = progress * Float(currentSongDuration)
         let newCMTime = CMTimeMake(value: Int64(newTime), timescale: 1)
         mediaPlayer?.seek(to: newCMTime)
+        delegate?.mediaTimeChanged()
         checkIfMediaEnded()
     }
     
@@ -122,8 +145,9 @@ struct MediaManager {
     }
     
     static func checkIfMediaEnded() {
-        let mediaProgress = Float((currentSongTime / currentSongDuration) * 1000).rounded() / 1000
-        if mediaProgress == 1 {
+        guard currentSongDuration > 0 else { return }
+        // Most songs only reach 0.999 progress
+        if currentSongProgress >= 0.999 {
             mediaDidEnd()
         }
     }
