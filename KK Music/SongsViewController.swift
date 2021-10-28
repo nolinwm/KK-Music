@@ -46,7 +46,6 @@ class SongsViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        
         MediaManager.delegate = self
         
         self.songsTableView.reloadRows(at: songsTableView.indexPathsForVisibleRows ?? [IndexPath](), with: .none)

@@ -39,12 +39,13 @@ class MediaViewController: UIViewController {
         MediaManager.delegate = self
         updateMediaView()
         beginAnimatingBackground()
+        
+        prepareForPresentAnimation()
+        presentAnimation()
     }
     
     func stylizeViewController() {
         scrubBar.setThumbImage(UIImage(systemName: "circle.fill"), for: .normal)
-        
-        containerView.layer.cornerRadius = 30
         
         swipeToCloseBar.layer.cornerRadius = 3
         
@@ -66,8 +67,8 @@ class MediaViewController: UIViewController {
         }
     }
     
-    @IBAction func closeTapped(_ sender: Any) {
-        dismiss(animated: true, completion: nil)
+    @IBAction func dismissTapped(_ sender: Any) {
+        dismissAnimation()
     }
     
     @IBAction func addTapped(_ sender: Any) {
@@ -104,10 +105,44 @@ class MediaViewController: UIViewController {
         let progress = scrubBar.value
         MediaManager.scrub(progress)
     }
-    
 }
 
-// MARK: = MediaManagerDelegate Methods
+// MARK: - Present and Dismiss Animation Methods
+extension MediaViewController {
+    
+    func prepareForPresentAnimation() {
+        containerView.transform = CGAffineTransform(
+            translationX: 0,
+            y: containerView.frame.height
+        )
+        containerView.layer.cornerRadius = 40
+    }
+    
+    func presentAnimation() {
+        UIView.animate(withDuration: 0.35, delay: 0, options: .curveEaseOut) {
+            self.containerView.transform = .identity
+        }
+        UIView.animate(withDuration: 0.175, delay: 0.175, options: .curveEaseOut) {
+            self.containerView.layer.cornerRadius = 0
+        }
+    }
+    
+    func dismissAnimation() {
+        UIView.animate(withDuration: 0.35, delay: 0, options: .curveEaseOut) {
+            self.containerView.transform = CGAffineTransform(
+                translationX: 0,
+                y: self.containerView.frame.height
+            )
+        } completion: { complete in
+            self.dismiss(animated: false, completion: nil)
+        }
+        UIView.animate(withDuration: 0.175, delay: 0, options: .curveEaseOut) {
+            self.containerView.layer.cornerRadius = 40
+        }
+    }
+}
+
+// MARK: - MediaManagerDelegate Methods
 extension MediaViewController: MediaManagerDelegate {
     
     func mediaStatusChanged() {
