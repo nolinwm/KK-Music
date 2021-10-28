@@ -22,7 +22,6 @@
 		5C4A13762726DC790072259C /* SongTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C4A13752726DC790072259C /* SongTableViewCell.swift */; };
 		5C6B30CA27272AFE00CD4620 /* UIImageExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C6B30C927272AFE00CD4620 /* UIImageExtension.swift */; };
 		5CC1AC43272736CC0021DB00 /* LibraryManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC1AC42272736CC0021DB00 /* LibraryManager.swift */; };
-		5CC1AC45272740170021DB00 /* NotificationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC1AC44272740170021DB00 /* NotificationViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -43,7 +42,6 @@
 		5C4A13752726DC790072259C /* SongTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongTableViewCell.swift; sourceTree = "<group>"; };
 		5C6B30C927272AFE00CD4620 /* UIImageExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIImageExtension.swift; sourceTree = "<group>"; };
 		5CC1AC42272736CC0021DB00 /* LibraryManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryManager.swift; sourceTree = "<group>"; };
-		5CC1AC44272740170021DB00 /* NotificationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,6 +55,53 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		5C10C456272B249D0083B27E /* Controllers */ = {
+			isa = PBXGroup;
+			children = (
+				5C310F6627248C23009C3773 /* SongsViewController.swift */,
+				5C310F7E27263E44009C3773 /* MediaViewController.swift */,
+			);
+			path = Controllers;
+			sourceTree = "<group>";
+		};
+		5C10C457272B24AE0083B27E /* Managers */ = {
+			isa = PBXGroup;
+			children = (
+				5C310F7A27263DC2009C3773 /* CacheManager.swift */,
+				5CC1AC42272736CC0021DB00 /* LibraryManager.swift */,
+				5C29468727297E1300E7EA84 /* MediaManager.swift */,
+			);
+			path = Managers;
+			sourceTree = "<group>";
+		};
+		5C10C458272B24C40083B27E /* Storyboards */ = {
+			isa = PBXGroup;
+			children = (
+				5C310F6827248C23009C3773 /* Main.storyboard */,
+				5C310F6D27248C24009C3773 /* LaunchScreen.storyboard */,
+			);
+			path = Storyboards;
+			sourceTree = "<group>";
+		};
+		5C10C459272B24D10083B27E /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				5C310F7627263CB5009C3773 /* SongModel.swift */,
+				5C310F7827263CE5009C3773 /* Song.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		5C10C45B272B24E80083B27E /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				5C4A13752726DC790072259C /* SongTableViewCell.swift */,
+				5C403B83272AD71D00DF59E1 /* AnimatedButton.swift */,
+				5C6B30C927272AFE00CD4620 /* UIImageExtension.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
 		5C310F5627248C23009C3773 = {
 			isa = PBXGroup;
 			children = (
@@ -76,23 +121,15 @@
 		5C310F6127248C23009C3773 /* KK Music */ = {
 			isa = PBXGroup;
 			children = (
+				5C10C458272B24C40083B27E /* Storyboards */,
+				5C10C456272B249D0083B27E /* Controllers */,
+				5C10C459272B24D10083B27E /* Models */,
+				5C10C457272B24AE0083B27E /* Managers */,
+				5C10C45B272B24E80083B27E /* Views */,
 				5C310F6227248C23009C3773 /* AppDelegate.swift */,
 				5C310F6427248C23009C3773 /* SceneDelegate.swift */,
-				5C310F6627248C23009C3773 /* SongsViewController.swift */,
-				5C310F6827248C23009C3773 /* Main.storyboard */,
 				5C310F6B27248C24009C3773 /* Assets.xcassets */,
-				5C310F6D27248C24009C3773 /* LaunchScreen.storyboard */,
 				5C310F7027248C24009C3773 /* Info.plist */,
-				5C310F7627263CB5009C3773 /* SongModel.swift */,
-				5C310F7827263CE5009C3773 /* Song.swift */,
-				5C310F7A27263DC2009C3773 /* CacheManager.swift */,
-				5C310F7E27263E44009C3773 /* MediaViewController.swift */,
-				5C4A13752726DC790072259C /* SongTableViewCell.swift */,
-				5C6B30C927272AFE00CD4620 /* UIImageExtension.swift */,
-				5CC1AC42272736CC0021DB00 /* LibraryManager.swift */,
-				5CC1AC44272740170021DB00 /* NotificationViewController.swift */,
-				5C29468727297E1300E7EA84 /* MediaManager.swift */,
-				5C403B83272AD71D00DF59E1 /* AnimatedButton.swift */,
 			);
 			path = "KK Music";
 			sourceTree = "<group>";
@@ -171,7 +208,6 @@
 				5C310F6727248C23009C3773 /* SongsViewController.swift in Sources */,
 				5C310F6327248C23009C3773 /* AppDelegate.swift in Sources */,
 				5C29468827297E1300E7EA84 /* MediaManager.swift in Sources */,
-				5CC1AC45272740170021DB00 /* NotificationViewController.swift in Sources */,
 				5C310F7727263CB5009C3773 /* SongModel.swift in Sources */,
 				5C6B30CA27272AFE00CD4620 /* UIImageExtension.swift in Sources */,
 				5C310F7F27263E44009C3773 /* MediaViewController.swift in Sources */,
