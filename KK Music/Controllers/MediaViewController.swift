@@ -67,7 +67,7 @@ class MediaViewController: UIViewController {
     }
     
     func beginAnimatingBackground() {
-        UIView.animate(withDuration: 10, delay: 0, options: [.repeat, .autoreverse]) {
+        UIView.animate(withDuration: 20, delay: 0, options: [.repeat, .autoreverse]) {
             self.backgroundImageView.transform = CGAffineTransform(
                 scaleX: 3.75,
                 y: 2
@@ -297,7 +297,7 @@ extension MediaViewController {
         DispatchQueue.main.async {
             UIView.animate(withDuration: 0.275, delay: 0, options: .curveEaseOut) {
                 self.songImageShadowView.transform = CGAffineTransform(scaleX: 0.825, y: 0.825)
-                self.songImageView.layer.shadowOpacity = (0.25 * 0.825)
+                self.songImageView.layer.shadowOpacity = 0.125
             }
         }
     }
