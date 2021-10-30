@@ -28,15 +28,12 @@ class SongsViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        songImageView.layer.cornerRadius = 3
-        scrubBar.progress = 0.0
-        scrubBar.transform = CGAffineTransform(scaleX: 1, y: 2)
-        hideMediaPeak(animated: false)
+        stylizeViewController()
+        transitionMediaPeak(hidden: true, animated: false)
         
         songsTableView.delegate = self
         songsTableView.dataSource = self
-        
+
         songModel.delegate = self
         songModel.fetchSongs()
         
@@ -54,30 +51,18 @@ class SongsViewController: UIViewController {
         }
     }
     
+    func stylizeViewController() {
+        songImageView.layer.cornerRadius = 3
+        scrubBar.progress = 0.0
+        scrubBar.transform = CGAffineTransform(scaleX: 1, y: 2)
+    }
+    
     func refreshView() {
         MediaManager.delegate = self
         smartReloadVisibleRows()
         updateMediaControls()
         updateMediaPeak()
         updateSelectedCell()
-    }
-    
-    func smartReloadVisibleRows() {
-        guard let indexPathsForVisibleRows = songsTableView.indexPathsForVisibleRows else { return }
-        var indexPathsToReload = [IndexPath]()
-        for indexPath in indexPathsForVisibleRows {
-            if let cell = songsTableView.cellForRow(at: indexPath) as? SongTableViewCell {
-                if let song = cell.song {
-                    // Image view isHidden should never match isAddedToLibrary, need to reload cell
-                    if cell.addedImageView.isHidden == LibraryManager.isAddedToLibrary(id: song.id) {
-                        indexPathsToReload.append(indexPath)
-                    }
-                }
-            }
-        }
-        if indexPathsToReload.count > 0 {
-            songsTableView.reloadRows(at: indexPathsToReload, with: .none)
-        }
     }
 }
 
@@ -99,7 +84,9 @@ extension SongsViewController: SongModelProtocol {
     
     func reloadSongs() {
         if MediaManager.songs.count > 0 {
-            songsTableView.reloadData()
+            DispatchQueue.main.async {
+                self.songsTableView.reloadData()
+            }
         }
     }
 }
@@ -107,23 +94,13 @@ extension SongsViewController: SongModelProtocol {
 // MARK: - Media Peak Methods
 extension SongsViewController: MediaManagerDelegate {
     
-    func hideMediaPeak(animated: Bool) {
+    func transitionMediaPeak(hidden: Bool, animated: Bool) {
         let duration = animated ? 0.25 : 0
-        self.mediaPeakBottomConstraint.constant = mediaPeak.frame.height * -1
+        self.mediaPeakBottomConstraint.constant = hidden ? (mediaPeak.frame.height * -1) : 0
         UIView.animate(withDuration: duration) {
             self.view.layoutIfNeeded()
-            self.mediaPeak.alpha = 0
-            self.mediaPeakBackground.alpha = 0
-        }
-    }
-    
-    func showMediaPeak(animated: Bool) {
-        let duration = animated ? 0.25 : 0
-        self.mediaPeakBottomConstraint.constant = 0
-        UIView.animate(withDuration: duration) {
-            self.view.layoutIfNeeded()
-            self.mediaPeak.alpha = 1
-            self.mediaPeakBackground.alpha = 1
+            self.mediaPeak.alpha = hidden ? 0 : 1
+            self.mediaPeakBackground.alpha = hidden ? 0 : 1
         }
     }
     
@@ -132,13 +109,10 @@ extension SongsViewController: MediaManagerDelegate {
         songNameLabel.text = currentSong.getName()
         
         let urlString = currentSong.image_uri!
-        
         if let data = CacheManager.fetchImage(urlString) {
-            DispatchQueue.main.async {
-                self.songImageView.image = UIImage(data: data)
-                self.backgroundImageView.image = UIImage(data: data)
-                self.scrubBar.progressTintColor = self.songImageView.image?.averageColor
-            }
+            self.songImageView.image = UIImage(data: data)
+            self.backgroundImageView.image = UIImage(data: data)
+            self.scrubBar.progressTintColor = self.songImageView.image?.averageColor
         } else {
             songImageView.image = UIImage(named: "ImageLoading")
             if let url = URL(string: urlString) {
@@ -152,7 +126,6 @@ extension SongsViewController: MediaManagerDelegate {
                                 self.backgroundImageView.image = UIImage(data: data!)
                                 self.scrubBar.progressTintColor = self.songImageView.image?.averageColor
                             }
-                            
                         }
                     }
                 }
@@ -160,7 +133,7 @@ extension SongsViewController: MediaManagerDelegate {
             }
         }
         
-        showMediaPeak(animated: true)
+        transitionMediaPeak(hidden: false, animated: true)
     }
     
     func updateMediaControls() {
@@ -196,10 +169,6 @@ extension SongsViewController {
     }
     
     @IBAction func forwardTapped(_ sender: Any) {
-        forwardAction()
-    }
-    
-    func forwardAction() {
         MediaManager.forward()
     }
 }
@@ -212,7 +181,7 @@ extension SongsViewController: UITableViewDataSource, UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "Song Cell", for: indexPath) as! SongTableViewCell
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: "Song Cell", for: indexPath) as? SongTableViewCell else { return UITableViewCell() }
         cell.display(song: MediaManager.songs[indexPath.row])
         return cell
     }
@@ -245,8 +214,22 @@ extension SongsViewController: UITableViewDataSource, UITableViewDelegate {
         return swipeActions
     }
     
-    func tableView(_ tableView: UITableView, didEndEditingRowAt indexPath: IndexPath?) {
-        updateSelectedCell()
+    func smartReloadVisibleRows() {
+        guard let indexPathsForVisibleRows = songsTableView.indexPathsForVisibleRows else { return }
+        var indexPathsToReload = [IndexPath]()
+        for indexPath in indexPathsForVisibleRows {
+            if let cell = songsTableView.cellForRow(at: indexPath) as? SongTableViewCell {
+                if let song = cell.song {
+                    // Image view isHidden should never match isAddedToLibrary, need to reload cell
+                    if cell.addedImageView.isHidden == LibraryManager.isAddedToLibrary(id: song.id) {
+                        indexPathsToReload.append(indexPath)
+                    }
+                }
+            }
+        }
+        if indexPathsToReload.count > 0 {
+            songsTableView.reloadRows(at: indexPathsToReload, with: .none)
+        }
     }
     
     func updateSelectedCell() {
