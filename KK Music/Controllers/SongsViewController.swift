@@ -204,7 +204,6 @@ extension SongsViewController: UITableViewDataSource, UITableViewDelegate {
                 LibraryManager.addToLibrary(id: song.id)
             }
             self.songsTableView.reloadRows(at: [indexPath], with: .automatic)
-            self.updateSelectedCell()
             completed(true)
         }
         item.backgroundColor = isAdded ? .red : .systemGray3
@@ -212,6 +211,10 @@ extension SongsViewController: UITableViewDataSource, UITableViewDelegate {
         
         let swipeActions = UISwipeActionsConfiguration(actions: [item])
         return swipeActions
+    }
+    
+    func tableView(_ tableView: UITableView, didEndEditingRowAt indexPath: IndexPath?) {
+        updateSelectedCell()
     }
     
     func smartReloadVisibleRows() {
