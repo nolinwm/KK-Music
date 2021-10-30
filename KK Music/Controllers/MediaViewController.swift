@@ -34,12 +34,12 @@ class MediaViewController: UIViewController {
     var isScrubbing = false
     var delegate: MediaViewDelegate?
     
-    var containerTranslation = CGPoint(x: 0, y: 0)
+    // Used for tracking the swipe to close full screen translation
+    var containerViewTranslation = CGPoint(x: 0, y: 0)
     
     override func viewDidLoad() {
         super.viewDidLoad()
         stylizeViewController()
-        
         view.addGestureRecognizer(UIPanGestureRecognizer(target: self, action: #selector(handlePanGesture)))
     }
     
@@ -47,10 +47,9 @@ class MediaViewController: UIViewController {
         super.viewWillAppear(animated)
         MediaManager.delegate = self
         updateMediaView()
-        beginAnimatingBackground()
         
-        prepareForPresentAnimation()
-        presentAnimation()
+        beginAnimatingBackground()
+        animatePresent()
     }
     
     func stylizeViewController() {
@@ -67,33 +66,29 @@ class MediaViewController: UIViewController {
     }
     
     func beginAnimatingBackground() {
-        UIView.animate(withDuration: 20, delay: 0, options: [.repeat, .autoreverse]) {
-            self.backgroundImageView.transform = CGAffineTransform(
-                scaleX: 3.75,
-                y: 2
-            )
+        // Animate the background image resizing to give impression of a live background
+        UIView.animate(withDuration: 30, delay: 0, options: [.repeat, .autoreverse, .curveEaseInOut]) {
+            self.backgroundImageView.transform = CGAffineTransform(scaleX: 4, y: 2)
             self.backgroundImageView.alpha = 0.85
         }
     }
     
     @IBAction func dismissTapped(_ sender: Any) {
-        dismissAnimation()
+        animateDismiss()
     }
     
     @IBAction func addTapped(_ sender: Any) {
         guard let currentSong = MediaManager.currentSong else { return }
-        
-        let isAdded = LibraryManager.isAddedToLibrary(id: currentSong.id)
         let hapticFeedback = UIImpactFeedbackGenerator(style: .light)
         
+        let isAdded = LibraryManager.isAddedToLibrary(id: currentSong.id)
         if isAdded {
             LibraryManager.removeFromLibrary(id: currentSong.id)
-            hapticFeedback.impactOccurred()
         } else {
             LibraryManager.addToLibrary(id: currentSong.id)
-            hapticFeedback.impactOccurred()
         }
         
+        hapticFeedback.impactOccurred()
         updateMediaControls()
     }
     
@@ -111,8 +106,7 @@ class MediaViewController: UIViewController {
     
     func didEndScrubbing() {
         isScrubbing = false
-        let progress = scrubBar.value
-        MediaManager.scrub(progress)
+        MediaManager.scrub(scrubBar.value)
     }
 }
 
@@ -122,21 +116,23 @@ extension MediaViewController {
     @objc func handlePanGesture(sender: UIPanGestureRecognizer) {
         switch sender.state {
         case.changed:
-            containerTranslation = sender.translation(in: view)
+            // Animate to the new finger position and adjust the corner radius accordingly.
+            containerViewTranslation = sender.translation(in: view)
             UIView.animate(withDuration: 0.075, delay: 0) {
-                self.containerView.transform = CGAffineTransform(translationX: 0, y: max(0, self.containerTranslation.y))
+                self.containerView.transform = CGAffineTransform(translationX: 0, y: max(0, self.containerViewTranslation.y))
             }
-            containerView.layer.cornerRadius = min((containerTranslation.y / 3), 40)
+            containerView.layer.cornerRadius = min((containerViewTranslation.y / 3), 40)
             break
         case .ended:
-            if self.containerTranslation.y < (view.frame.height / 3.5) {
-                UIView.animate(withDuration: self.containerTranslation.y / view.frame.height, delay: 0) {
+            // Once finger is lifted, determine if it should bounce back up or dismiss.
+            if self.containerViewTranslation.y < (view.frame.height / 3.5) {
+                UIView.animate(withDuration: self.containerViewTranslation.y / view.frame.height, delay: 0) {
                     self.containerView.transform = .identity
                     self.containerView.layer.cornerRadius = 0
                 }
             } else {
                 view.isUserInteractionEnabled = false
-                dismissAnimation()
+                animateDismiss()
             }
             break
         default:
@@ -144,15 +140,15 @@ extension MediaViewController {
         }
     }
     
-    func prepareForPresentAnimation() {
+    func animatePresent() {
+        // Prepare
         containerView.transform = CGAffineTransform(
             translationX: 0,
             y: containerView.frame.height
         )
         containerView.layer.cornerRadius = 40
-    }
-    
-    func presentAnimation() {
+        
+        // Animate
         UIView.animate(withDuration: 0.35, delay: 0, options: .curveEaseInOut) {
             self.containerView.transform = .identity
         }
@@ -161,7 +157,7 @@ extension MediaViewController {
         }
     }
     
-    func dismissAnimation() {
+    func animateDismiss() {
         delegate?.mediaViewWillDismiss()
         UIView.animate(withDuration: 0.28, delay: 0, options: .curveEaseOut) {
             self.containerView.transform = CGAffineTransform(
@@ -181,7 +177,9 @@ extension MediaViewController {
 extension MediaViewController: MediaManagerDelegate {
     
     func mediaStatusChanged() {
-        updateMediaView()
+        DispatchQueue.main.async {
+            self.updateMediaView()
+        }
     }
     
     func mediaTimeChanged() {
@@ -195,6 +193,7 @@ extension MediaViewController: MediaManagerDelegate {
         }
         
         let currentSongTime = isScrubbing ? Int(Float(MediaManager.currentSongDuration) * scrubBar.value) : MediaManager.currentSongTime
+        
         let currentSongTimeString = convertSecondsToTimeString(seconds: currentSongTime)
         let currentSongRemainingDurationString = convertSecondsToTimeString(seconds: MediaManager.currentSongDuration - currentSongTime)
 
@@ -218,6 +217,7 @@ extension MediaViewController: MediaManagerDelegate {
         
         var timeString = "\(minutes):"
         if remainingSeconds < 10 {
+            // Append a 0 if there is less than 10 seconds
             timeString = "\(timeString)0"
         }
         timeString = "\(timeString)\(remainingSeconds)"
@@ -233,9 +233,8 @@ extension MediaViewController {
         guard let currentSong = MediaManager.currentSong else { return }
         
         songNameLabel.text = currentSong.getName()
-        loadMediaImage()
-        
         updateMediaControls()
+        loadMediaImage()
     }
     
     func updateMediaControls() {
@@ -245,9 +244,9 @@ extension MediaViewController {
         pauseButton.isHidden = !MediaManager.isPlaying
         
         if MediaManager.isPlaying {
-            pullImageView()
+            animatePullImageView()
         } else {
-            pushImageView()
+            animatePushImageView()
         }
         
         let isAdded = LibraryManager.isAddedToLibrary(id: currentSong.id)
@@ -293,21 +292,17 @@ extension MediaViewController {
         }
     }
     
-    func pushImageView() {
-        DispatchQueue.main.async {
-            UIView.animate(withDuration: 0.275, delay: 0, options: .curveEaseOut) {
-                self.songImageShadowView.transform = CGAffineTransform(scaleX: 0.825, y: 0.825)
-                self.songImageView.layer.shadowOpacity = 0.125
-            }
+    func animatePushImageView() {
+        UIView.animate(withDuration: 0.225, delay: 0, options: .curveEaseOut) {
+            self.songImageShadowView.transform = CGAffineTransform(scaleX: 0.825, y: 0.825)
+            self.songImageView.layer.shadowOpacity = 0.05
         }
     }
     
-    func pullImageView() {
-        DispatchQueue.main.async {
-            UIView.animate(withDuration: 0.45, delay: 0, usingSpringWithDamping: 0.725, initialSpringVelocity: 2.75, options: .curveEaseOut) {
-                self.songImageShadowView.transform = .identity
-                self.songImageView.layer.shadowOpacity = 0.25
-            }
+    func animatePullImageView() {
+        UIView.animate(withDuration: 0.45, delay: 0, usingSpringWithDamping: 0.725, initialSpringVelocity: 2.75, options: .curveEaseOut) {
+            self.songImageShadowView.transform = .identity
+            self.songImageView.layer.shadowOpacity = 0.25
         }
     }
 }
@@ -316,26 +311,18 @@ extension MediaViewController {
 extension MediaViewController {
     
     @IBAction func backwardTapped(_ sender: Any) {
-        if !MediaManager.isPlaying {
-            pullImageView()
-        }
         MediaManager.backward()
     }
     
     @IBAction func playTapped(_ sender: Any) {
         MediaManager.play()
-        pullImageView()
     }
     
     @IBAction func pauseTapped(_ sender: Any) {
         MediaManager.pause()
-        pushImageView()
     }
     
     @IBAction func forwardTapped(_ sender: Any) {
-        if !MediaManager.isPlaying {
-            pullImageView()
-        }
         MediaManager.forward()
     }
 }
