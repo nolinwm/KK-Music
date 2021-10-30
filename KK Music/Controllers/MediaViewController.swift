@@ -291,14 +291,14 @@ extension MediaViewController {
     func animatePushImageView() {
         UIView.animate(withDuration: 0.225, delay: 0, options: .curveEaseOut) {
             self.songImageShadowView.transform = CGAffineTransform(scaleX: 0.825, y: 0.825)
-            self.songImageView.layer.shadowOpacity = 0.05
+            self.songImageShadowView.layer.shadowOpacity = 0.175
         }
     }
     
     func animatePullImageView() {
         UIView.animate(withDuration: 0.45, delay: 0, usingSpringWithDamping: 0.725, initialSpringVelocity: 2.75, options: .curveEaseOut) {
             self.songImageShadowView.transform = .identity
-            self.songImageView.layer.shadowOpacity = 0.25
+            self.songImageShadowView.layer.shadowOpacity = 0.25
         }
     }
 }
