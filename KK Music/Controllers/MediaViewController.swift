@@ -251,9 +251,7 @@ extension MediaViewController {
         
         let isAdded = LibraryManager.isAddedToLibrary(id: currentSong.id)
         let image = isAdded ? UIImage(systemName: "checkmark.circle.fill") : UIImage(systemName: "plus")
-        DispatchQueue.main.async {
-            self.addedButton.setImage(image, for: .normal)
-        }
+        self.addedButton.setImage(image, for: .normal)
     }
     
     func loadMediaImage() {
@@ -263,10 +261,8 @@ extension MediaViewController {
             let urlString = currentSong.image_uri!
             
             if let data = CacheManager.fetchImage(urlString) {
-                DispatchQueue.main.async {
-                    self.songImageView.image = UIImage(data: data)
-                    self.backgroundImageView.image = UIImage(data: data)
-                }
+                self.songImageView.image = UIImage(data: data)
+                self.backgroundImageView.image = UIImage(data: data)
                 return
             }
             
