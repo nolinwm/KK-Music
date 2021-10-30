@@ -10,7 +10,7 @@ import UIKit
 
 class AnimatedButton: UIButton {
     
-    func push() {
+    func animatePush() {
         DispatchQueue.main.async {
             UIView.animate(withDuration: 0.075, delay: 0, options: .curveEaseOut) {
                 self.transform = CGAffineTransform(scaleX: 0.9, y: 0.9)
@@ -18,7 +18,7 @@ class AnimatedButton: UIButton {
         }
     }
     
-    func pull() {
+    func animtePull() {
         DispatchQueue.main.async {
             self.transform = .identity
         }
@@ -27,9 +27,9 @@ class AnimatedButton: UIButton {
     open override var isHighlighted: Bool {
         didSet {
             if isHighlighted {
-                push()
+                animatePush()
             } else {
-                pull()
+                animtePull()
             }
         }
     }

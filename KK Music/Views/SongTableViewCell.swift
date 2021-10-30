@@ -15,15 +15,15 @@ class SongTableViewCell: UITableViewCell {
     
     var song: Song?
     
-    private func clear() {
+    private func resetCell() {
         isSelected = false
         songNameLabel.text = nil
         songImageView.image = UIImage(named: "ImageLoading")
         addedImageView.isHidden = true
     }
     
-    func display(song: Song) {
-        clear()
+    func displayCell(song: Song) {
+        resetCell()
         
         self.song = song
         songNameLabel.text = song.getName()
@@ -40,9 +40,7 @@ class SongTableViewCell: UITableViewCell {
             let urlString = song.image_uri!
             
             if let data = CacheManager.fetchImage(urlString) {
-                DispatchQueue.main.async {
-                    self.songImageView.image = UIImage(data: data)
-                }
+                self.songImageView.image = UIImage(data: data)
                 return
             }
             
@@ -63,5 +61,4 @@ class SongTableViewCell: UITableViewCell {
             }
         }
     }
-    
 }

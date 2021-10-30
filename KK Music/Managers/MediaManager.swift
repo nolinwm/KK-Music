@@ -140,15 +140,12 @@ struct MediaManager {
         checkIfMediaEnded()
     }
     
-    static func mediaDidEnd() {
-        forward()
-    }
-    
     static func checkIfMediaEnded() {
         guard currentSongDuration > 0 else { return }
         // Most songs only reach 0.999 progress
         if currentSongProgress >= 0.999 {
-            mediaDidEnd()
+            // Media ended, skip forward to next song
+            forward()
         }
     }
 }

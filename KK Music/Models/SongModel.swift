@@ -18,39 +18,34 @@ struct SongModel {
     var delegate: SongModelProtocol?
     
     func fetchSongs() {
-        
-        // Create URL Object
         let url = URL(string: apiURL)
-        guard url != nil else { return }
+        guard let url = url else { return }
         
-        // Create URL Session
         let session = URLSession.shared
         
         // Create Data Task
-        let dataTask = session.dataTask(with: url!) { (data, response, error) in
+        let dataTask = session.dataTask(with: url) { (data, response, error) in
             
             if error == nil && data != nil {
                 let decoder = JSONDecoder()
                 do {
                     let songsDictionary = try decoder.decode([String: Song].self, from: data!)
                     DispatchQueue.main.async {
-                        
                         let songs = self.convertDictionaryToArray(songsDictionary)
                         let sortedSongs = sortArrayAlphabetically(songs)
                         self.delegate?.songsRetrieved(sortedSongs)
-                        
                     }
                 } catch {
-                    print("Error fetching and decoding songs.")
+                    // Error fetching and decoding songs.
+                    // TODO: Handle song fetching error.
                 }
             }
         }
-        
-        // Resume Data Task
         dataTask.resume()
     }
     
     func sortArrayAlphabetically(_ songs: [Song]) -> [Song] {
+        // Swap sort the array
         var sorted = songs
         for _ in 0 ..< sorted.count{
             for j in 0 ..< sorted.count-1 {
@@ -64,11 +59,9 @@ struct SongModel {
     
     func convertDictionaryToArray(_ dictionary: [String: Song]) -> [Song] {
         var array = [Song]()
-        
         for (_, song) in dictionary {
             array.append(song)
         }
-        
         return array
     }
 }

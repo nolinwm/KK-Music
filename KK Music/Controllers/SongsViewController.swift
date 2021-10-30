@@ -182,7 +182,7 @@ extension SongsViewController: UITableViewDataSource, UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "Song Cell", for: indexPath) as? SongTableViewCell else { return UITableViewCell() }
-        cell.display(song: MediaManager.songs[indexPath.row])
+        cell.displayCell(song: MediaManager.songs[indexPath.row])
         return cell
     }
     

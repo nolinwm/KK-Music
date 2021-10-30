@@ -15,9 +15,9 @@ struct Song: Decodable {
     var image_uri: String?
     
     func getName() -> String {
-        guard name != nil else { return "" }
+        guard let name = name else { return "" }
         
-        if let usEnName = name!["name-USen"] {
+        if let usEnName = name["name-USen"] {
             return usEnName
         } else {
             return ""
